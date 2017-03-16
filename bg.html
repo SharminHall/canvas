@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>YEAH</title>
+</head>
+<style>		
+*{padding:0; margin:0;}
+body{background: black;overflow: hidden;}
+div#start{
+	display:inline-block;
+	position:absolute;
+	left:50%;
+	top:40%;
+	z-index: 100;
+	width:80px;
+	height:80px;
+	border:none;
+	border-radius: 50%;
+	font:italic 18px Arial;
+	color:white;
+	background-color:black;
+	opacity: 0.7;
+	outline: none;
+	box-shadow: 0px 0px 5px 4px white,0 0 5px 4px white inset;
+
+	animation:halo 1s infinite 1s alternate;
+	-o-animation:halo 1s infinite 1s alternate;
+	-webkit-animation:halo 1s infinite 1s alternate;
+	-moz-animation:halo 1s infinite 1s alternate;
+
+}
+@keyframes halo{
+	from{box-shadow: 0px 0px 5px 4px white, 0 0 4px 3px white inset;}
+	to{box-shadow: 0px 0px 5px 1px white, 0 0 4px 3px white inset;}
+}
+@-o-keyframes halo{
+	from{box-shadow: 0px 0px 5px 4px white, 0 0 4px 3px white inset;}
+	to{box-shadow: 0px 0px 5px 1px white, 0 0 4px 3px white inset;}
+}
+@-webkit-keyframes halo{
+	from{box-shadow: 0px 0px 5px 4px white, 0 0 4px 3px white inset;}
+	to{box-shadow: 0px 0px 5px 1px white, 0 0 4px 3px white inset;}
+}
+@-moz-keyframes halo{
+	from{box-shadow: 0px 0px 5px 4px white, 0 0 4px 3px white inset;}
+	to{box-shadow: 0px 0px 5px 1px white, 0 0 4px 3px white inset;}
+}
+</style>
+<body>
+	<div id="start"></div>
+	<script>
+		function getRandom(min, max){
+			if (min < 0){
+				return Math.random()*(max-min) + min;
+			}
+
+			return Math.floor(Math.random()*(max-min)+ min);
+			
+		}
+		function Circle(){
+			this.ele = document.getElementById("start");
+			this.rx = window.innerWidth/2+40;
+			this.ry = window.innerHeight*2/5+40;
+			this.vx = getRandom(-1,1);
+			this.vy = getRandom(-1,1); 
+		}
+		Circle.prototype.setPosition = function(){
+			this.ele.style.position = "absolute";
+			this.ele.style.left = this.rx - 40 +"px";
+			this.ele.style.top = this.ry - 40 + "px";
+		}
+		Circle.prototype.move = function(){
+			
+			if(this.ele.style.left.slice(0, -2) <= 0 || this.ele.style.left.slice(0, -2) >= window.innerWidth-80){this.vx = -this.vx;}
+			if(this.ele.style.top.slice(0, -2) <= 0 || this.ele.style.top.slice(0, -2) >= window.innerHeight-80){this.vy = -this.vy;}
+
+			this.ele.style.left = +this.ele.style.left.slice(0, -2) +this.vx +"px";
+			this.ele.style.top = +this.ele.style.top.slice(0, -2) + this.vy + "px";
+			this.rx += this.vx;
+			this.ry += this.vy;
+
+		}
+
+		function Canvas(){
+			this.width = window.innerWidth;
+			this.height = window.innerHeight;
+			this.maxNum = 200; //最大点数
+			this.pos = []; //存储点的所有属性
+			this.cxt;  //
+		}
+
+		Canvas.prototype.createEle = function(){
+			var ele = document.createElement("canvas");
+
+			ele.id = "canvas";
+			ele.value = "sorry,your browser can not support canvas!";
+			document.body.appendChild(ele);
+			
+		}
+		Canvas.prototype.getCanvasObj = function(){
+			var canvas = document.getElementById("canvas");
+			canvas.width = this.width;
+			canvas.height = this.height;			
+			if(canvas.getContext('2d')){
+				this.cxt = canvas.getContext('2d');
+
+			} else{
+				return 0;
+			}
+		}
+		//设置圆点的属性
+		Canvas.prototype.setCircle = function(){
+			for(var i = 0; i < this.maxNum; i++){
+				this.pos[i] = {
+					r: getRandom(1,4),
+					x: getRandom(0, this.width),
+					y: getRandom(0, this.height),
+					vx: getRandom(-0.2,0.2),
+					vy: getRandom(-0.2,0.2),
+					color: 'rgb('+getRandom(0, 255)+','+getRandom(0, 255)+','+getRandom(0, 255)+')'
+				}
+			}
+		}
+		Canvas.prototype.draw = function(){
+			for(var i = 0; i < this.pos.length-1; i++){
+				this.cxt.beginPath();
+				this.cxt.fillStyle = this.pos[i].color;
+				this.cxt.arc(this.pos[i].x, this.pos[i].y, this.pos[i].r, 0, Math.PI*2, true);
+				this.cxt.fill();
+			}
+		}
+		//动画
+		Canvas.prototype.animate = function(){
+
+			canvas.cxt.clearRect(0,0,canvas.width,canvas.height);
+			circle.move();
+			for(var i=0; i<canvas.pos.length;i++){
+				canvas.pos[i].x += canvas.pos[i].vx;
+				if(canvas.pos[i].x <= 0 || canvas.pos[i].x >= canvas.width){
+					canvas.pos[i].vx = -canvas.pos[i].vx;
+				}
+				canvas.pos[i].y += canvas.pos[i].vy;
+				if(canvas.pos[i].y <= 0 || canvas.pos[i].y >= canvas.height){
+					canvas.pos[i].vy = -canvas.pos[i].vy;
+				}
+
+				canvas.drawCircle(canvas.pos[i].x, canvas.pos[i].y,canvas.pos[i].r,canvas.pos[i].color);
+				//判断是否在圆周范围内
+				if( (canvas.pos[i].x-circle.rx)*(canvas.pos[i].x-circle.rx)+(canvas.pos[i].y-circle.ry)*(canvas.pos[i].y-circle.ry) < 160*160){
+
+					canvas.drawLine(circle.rx, canvas.pos[i].x, circle.ry, canvas.pos[i].y, canvas.pos[i].color);
+					// 连线
+					for(var j=i+1;j<canvas.pos.length;j++){
+						if( (( canvas.pos[i].x-canvas.pos[j].x ) * ( canvas.pos[i].x-canvas.pos[j].x ) + 
+							( canvas.pos[i].y-canvas.pos[j].y ) * ( canvas.pos[i].y-canvas.pos[j].y )) < 80*80 ){
+
+							canvas.drawLine(canvas.pos[i].x, canvas.pos[j].x, canvas.pos[i].y, canvas.pos[j].y, canvas.pos[j].color);
+						}
+					}
+				}
+			}
+			window.requestAnimationFrame(canvas.animate);
+		}
+		Canvas.prototype.drawCircle = function(x,y,r,color){
+			this.cxt.beginPath();
+			this.cxt.fillStyle = color;
+			this.cxt.arc(x, y, r, 0, Math.PI*2, true);
+			this.cxt.fill();
+		}
+		Canvas.prototype.drawLine = function(xs,xe,ys,ye,color){
+			this.cxt.beginPath();
+			this.cxt.strokeStyle = color;
+			this.cxt.moveTo(xs, ys);
+			this.cxt.lineTo(xe, ye);
+			this.cxt.stroke();
+			this.cxt.closePath();
+		}
+		
+		var circle = new Circle();
+		circle.setPosition();
+
+		var canvas = new Canvas();
+		canvas.createEle();
+		canvas.getCanvasObj();
+		canvas.setCircle();
+		canvas.draw();
+		canvas.animate();
+	</script>
+</body>
+</html>
